@@ -46,7 +46,7 @@ angular.module('afkl.lazyImage')
                         out[lastChar] = intVal;
                     } else if (!isNaN(floatVal) && lastChar === 'x') {
                         out[lastChar] = floatVal;
-                    } 
+                    }
 
                 }
             }
@@ -94,7 +94,7 @@ angular.module('afkl.lazyImage')
             return images;
 
         };
-      
+
         /**
         * Direct implementation of "processing the image candidates":
         * http://www.whatwg.org/specs/web-apps/current-work/multipage/embedded-content-1.html#processing-the-image-candidates
@@ -310,7 +310,7 @@ angular.module('afkl.lazyImage')
             }]
         };
     })
-    .directive('afklLazyImage', ['$window', '$timeout', 'afklSrcSetService', '$parse', function ($window, $timeout, srcSetService, $parse) {
+    .directive('afklLazyImage', ['$window', '$timeout', 'afklSrcSetService', '$parse','$rootScope', function ($window, $timeout, srcSetService, $parse, $rootScope) {
         'use strict';
 
         // Use srcSetService to find out our best available image
@@ -347,7 +347,7 @@ angular.module('afkl.lazyImage')
                 var LOADING = 'afkl-lazy-image-loading';
 
                 var IMAGECLASSNAME = 'afkl-lazy-image';
-                
+
                 if (options.className) {
                     IMAGECLASSNAME = IMAGECLASSNAME + ' ' + options.className;
                 }
@@ -426,7 +426,7 @@ angular.module('afkl.lazyImage')
                     if (hasImage) {
                         // we have to make an image if background is false (default)
                         if (!options.background) {
-                            
+
                             if (!img) {
                                 // element.addClass(LOADING);
                                 img = angular.element('<img ' + alt + ' class="' + IMAGECLASSNAME + '"/>');
@@ -440,6 +440,7 @@ angular.module('afkl.lazyImage')
                         // set correct src/url
                         _checkIfNewImage();
                     }
+                    console.log('_placeImage', hasImage);
 
                     // Element is added to dom, no need to listen to scroll anymore
                     $container.off('scroll', _onViewChange);
@@ -459,7 +460,7 @@ angular.module('afkl.lazyImage')
                                 img.one('load', _loaded);
                                 img.one('error', _error);
                             }
-                            
+
                             // update image url
                             _setImage();
                         }
@@ -485,6 +486,7 @@ angular.module('afkl.lazyImage')
 
                 // Check if the container is in view for the first time. Utilized by the scroll and resize events.
                 var _onViewChange = function () {
+                  console.log('_onViewChange');
                     // only do stuff when not set already
                     if (!loaded) {
 
@@ -527,7 +529,6 @@ angular.module('afkl.lazyImage')
 
                 // Remove events for total destroy
                 var _eventsOff = function() {
-
                     $timeout.cancel(timeout);
 
                     $container.off('scroll', _onViewChange);
@@ -570,8 +571,11 @@ angular.module('afkl.lazyImage')
 
                 // Remove all events when destroy takes place
                 scope.$on('$destroy', function () {
+                    $rootScope.$broadcast('resize');
                     return _eventsOff();
                 });
+
+                scope.$on('resize', _onResize);
 
                 return _onViewChange();
 
